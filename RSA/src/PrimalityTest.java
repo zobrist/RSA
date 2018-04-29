@@ -32,14 +32,14 @@ public class PrimalityTest {
 		return list;
 	}
 	
-	public static void main(String[] args) {
-		/*for(int i = 0; i < 100; i++) {
+	public static ArrayList<Integer> getPrimesBetween(int min, int max) {
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		
+		for(int i = min; i < max; i++) {
 			if(isPrime(i))
-				System.out.println("" + i + " is prime");
-		}*/
-		ArrayList<Integer> list = getFirstNPrimes(100);
-		for(Integer i: list) {
-			System.out.print("" + i + ",");
+				list.add(i);
 		}
+		
+		return list;
 	}
 }

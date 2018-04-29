@@ -49,10 +49,6 @@ public class Message {
 		return textString.toString();
 	}
 	
-	public static void encrypt(String text, int n, int m) {}
-	
-	public static void decrypt(String text, int n, int m) {}
-	
 	public static void main(String[] args) {
 		String s = toNum("have a nice day rodney");
 		System.out.println(s);
