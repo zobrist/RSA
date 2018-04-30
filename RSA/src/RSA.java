@@ -67,8 +67,70 @@ public class RSA {
 		System.out.println("Decrypted Message: " + Message.toText(decryptedMsg.toString()));
 	}
 	
+	public static void decryptNoPrivateKey(String text, int n, int e) {
+		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(0, n);
+		ArrayList<Integer[]> factorPrimes = new ArrayList<Integer[]>();
+		BigInteger bigN = BigInteger.valueOf(n);
+		
+		System.out.println("length: " + primes.size());
+		for(int i = 0; i < primes.size(); i++) {
+			for(int j = i + 1; j < primes.size(); j++) {
+				//System.out.println("Inside double loop");
+				BigInteger product = BigInteger.valueOf(primes.get(i)).multiply(BigInteger.valueOf(primes.get(j)));
+				if(bigN.compareTo(product) == 0) {
+					Integer[] factor = new Integer[2];
+					factor[0] = primes.get(i);
+					factor[1] = primes.get(j);
+					//add something here to compute phi, e, and d
+					factorPrimes.add(factor);
+				}
+			}
+		}
+		
+		ArrayList<Integer> phis = new ArrayList<Integer>();
+		for(Integer[] i : factorPrimes) {
+			BigInteger phi = BigInteger.valueOf(i[0]).multiply(BigInteger.valueOf(i[1]));
+			System.out.println(i[0] + " * " + i[1] + " = " + n);
+		}
+		//call decrypt(text, n, d) ones d is found
+	}
+	
+	public static int modularInverse(int e, int phi) {
+		int m0 = phi;
+        int y = 0, x = 1;
+ 
+        if (phi == 1)
+            return 0;
+ 
+        while (e > 1)
+        {
+            // q is quotient
+            int q = e / phi;
+ 
+            int t = phi;
+ 
+            // m is remainder now, process
+            // same as Euclid's algo
+            phi = e % phi;
+            e = t;
+            t = y;
+ 
+            // Update x and y
+            y = x - q * y;
+            x = t;
+        }
+ 
+        // Make x positive
+        if (x < 0)
+            x += m0;
+ 
+        return x;
+	}
+	
 	public static void main(String[] args) {
-		encrypt("have a nice day", 3233, 17);
-		decrypt("080122 050001 001409 030500 040125", 3233, 413);
+		int x = modularInverse(693647, 802193);
+		System.out.print("mod: " + x);
+		//encrypt("have a nice day", 999797, 123457);
+		//decryptNoPrivateKey("080122 050001 001409 030500 040125", 999797, 123457);
 	}
 }
