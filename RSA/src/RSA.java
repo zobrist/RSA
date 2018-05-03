@@ -64,35 +64,35 @@ public class RSA {
 			decryptedMsg.append(str + " ");
 		}
 		
-		System.out.println("Decrypted Message: " + Message.toText(decryptedMsg.toString()));
+		System.out.println("Decrypted Message: " + decryptedMsg.toString());
+		System.out.println("Message: " + Message.toText(decryptedMsg.toString()));
 	}
 	
 	public static void decryptNoPrivateKey(String text, int n, int e) {
-		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(0, n);
-		ArrayList<Integer[]> factorPrimes = new ArrayList<Integer[]>();
+		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(0, (int)Math.ceil(Math.sqrt(n)));
 		BigInteger bigN = BigInteger.valueOf(n);
 		
-		System.out.println("length: " + primes.size());
+		int p = 0, q = 0, phi, d = 0;
+		
 		for(int i = 0; i < primes.size(); i++) {
-			for(int j = i + 1; j < primes.size(); j++) {
-				//System.out.println("Inside double loop");
-				BigInteger product = BigInteger.valueOf(primes.get(i)).multiply(BigInteger.valueOf(primes.get(j)));
-				if(bigN.compareTo(product) == 0) {
-					Integer[] factor = new Integer[2];
-					factor[0] = primes.get(i);
-					factor[1] = primes.get(j);
-					//add something here to compute phi, e, and d
-					factorPrimes.add(factor);
-				}
-			}
+			p = primes.get(i);
+			q = n / p;
+			if(BigInteger.valueOf(p*q).compareTo(bigN) == 0)
+				if(PrimalityTest.isPrime(q))
+					break;
 		}
 		
-		ArrayList<Integer> phis = new ArrayList<Integer>();
-		for(Integer[] i : factorPrimes) {
-			BigInteger phi = BigInteger.valueOf(i[0]).multiply(BigInteger.valueOf(i[1]));
-			System.out.println(i[0] + " * " + i[1] + " = " + n);
+		phi = (p - 1) * (q - 1);
+		BigInteger bigPhi = BigInteger.valueOf(phi);
+		BigInteger bigE = BigInteger.valueOf(e);
+		int gcd = (bigE.gcd(bigPhi)).intValue();
+		
+		if(gcd == 1) {
+			System.out.println("n:" + n + " p:" + p + " q:" + q + " phi:" + phi);
+			//compute d
 		}
-		//call decrypt(text, n, d) ones d is found
+		
+		//decrypt(text, n, d);
 	}
 	
 	public static int modularInverse(int e, int phi) {
@@ -128,9 +128,13 @@ public class RSA {
 	}
 	
 	public static void main(String[] args) {
-		int x = modularInverse(693647, 802193);
-		System.out.print("mod: " + x);
-		//encrypt("have a nice day", 999797, 123457);
-		//decryptNoPrivateKey("080122 050001 001409 030500 040125", 999797, 123457);
+		decryptNoPrivateKey("080122 050001 001409 030500 040125", 999797, 123457);
+		decryptNoPrivateKey("080122 050001 001409 030500 040125", 26219, 123457);
+		decryptNoPrivateKey("080122 050001 001409 030500 040125", 840097, 123457);
+		decryptNoPrivateKey("080122 050001 001409 030500 040125", 4166269, 123457);
+		decryptNoPrivateKey("080122 050001 001409 030500 040125", 1830529, 123457);
+		//int x = modularInverse(693647, 802193);
+		//System.out.println("x : " + x);
+		//decrypt("082976 371981 814231 505650 853440 353277 596004 250518 494162 922046 540928 633792 779152 973836 494176 019498 125267 683832 244888 922046 522776 395123 915899 132032 620457 568301 878543 623328 746341 710542", 999797, 253825);
 	}
 }
