@@ -28,9 +28,12 @@ public class Message {
 		StringBuilder numString = new StringBuilder();
 		text = text.toLowerCase();
 		
+		while(text.length()*2 % 3 != 0)
+			text = text + " ";
+		
 		for(int i = 0; i < text.length(); i++)
-			numString.append(((i + 1) % 3 == 0)? map1.get(text.charAt(i)) + " " : map1.get(text.charAt(i)));		
-	
+			numString.append(((i + 1) % 3 == 0)? map1.get(text.charAt(i)) + " " : map1.get(text.charAt(i)));
+		
 		return numString.toString();
 	}
 	
@@ -47,12 +50,5 @@ public class Message {
 		}
 			
 		return textString.toString();
-	}
-	
-	public static void main(String[] args) {
-		String s = toNum("have a nice day rodney");
-		System.out.println(s);
-		String t = toText("080122 050001 001409 030500 040125 001815 041405 25");
-		System.out.println(t);
 	}
 }

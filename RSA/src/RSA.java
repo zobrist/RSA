@@ -3,24 +3,30 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class RSA {
-	public static void generateKey() {
-		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(1000, 1100);
+	public static void generateKey(int min, int max) {				//will generate p and q between min and max
+		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(min, max);
 		Random rand = new Random();
 		
 		int p = primes.get(rand.nextInt(primes.size()-1));
 		int q = primes.get(rand.nextInt(primes.size()-1));
 		int n = p*q;
 		int phi = (p-1)*(q-1);
-		//choose public exponent e
-		//int e = ;
-		//compute private exponent d
-		//int d = ;
-		//public key (n, e) private key (n, d)
+		
+		ArrayList<Integer> admissibleE = PrimalityTest.getPrimesBetween(2, phi-1);
+		int e = admissibleE.get(rand.nextInt(admissibleE.size() - 1));
+		while(getGCD(e, phi) != 1) {
+			e = admissibleE.get(rand.nextInt(admissibleE.size() - 1));
+		}
+		
+		int d = solveLinearCongruence(e, 1, phi).get(0);
+		System.out.println("Public key\nn: " + n + "\ne: " + e);
+		System.out.println("Private key\nn: " + n + "\nd: " + d);
 	}
 	
-	public static void encrypt(String text, int n, int e) {
+	public static void encrypt(String text, int n, int e) {			//encrypt the given text using public key (n, e)
 		String numString = Message.toNum(text);
-		System.out.println("Original Message: " + numString);
+		System.out.println("Original text: " + text);
+		System.out.println("Translated text: " + numString);
 		String[] blocks = numString.split("\\s+");
 		ArrayList<BigInteger> ciphers = new ArrayList<BigInteger>();
 		
@@ -40,12 +46,12 @@ public class RSA {
 			encryptedMsg.append(str + " ");
 		}
 		
-		System.out.println("Encrypted Message: " + encryptedMsg.toString());
+		System.out.println("Ciphertext: " + encryptedMsg.toString());
 	}
 	
-	public static void decrypt(String text, int n, int d) {
+	public static void decrypt(String text, int n, int d) {			//decrypt the given text using private key (n, d)
 		String[] blocks = text.split("\\s+");
-		System.out.println("Original Message: " + text);
+		System.out.println("Ciphertext: " + text);
 		ArrayList<BigInteger> deciphers = new ArrayList<BigInteger>();
 		
 		for(String block : blocks) {
@@ -64,11 +70,11 @@ public class RSA {
 			decryptedMsg.append(str + " ");
 		}
 		
-		System.out.println("Decrypted Message: " + decryptedMsg.toString());
-		System.out.println("Message: " + Message.toText(decryptedMsg.toString()));
+		System.out.println("Deciphered text: " + decryptedMsg.toString());
+		System.out.println("Plaintext: " + Message.toText(decryptedMsg.toString()));
 	}
 	
-	public static void decryptNoPrivateKey(String text, int n, int e) {
+	public static void decryptNoPrivateKey(String text, int n, int e) {				//decrypt the given text using the public key (n, e)
 		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(0, (int)Math.ceil(Math.sqrt(n)));
 		BigInteger bigN = BigInteger.valueOf(n);
 		
@@ -88,53 +94,70 @@ public class RSA {
 		int gcd = (bigE.gcd(bigPhi)).intValue();
 		
 		if(gcd == 1) {
-			System.out.println("n:" + n + " p:" + p + " q:" + q + " phi:" + phi);
-			//compute d
+			d = solveLinearCongruence(e, 1, phi).get(0);
+			System.out.println("n:" + n + "\np:" + p + "\nq:" + q + "\nphi:" + phi + "\nd: " + d);
+			decrypt(text, n, d);
 		}
-		
-		//decrypt(text, n, d);
 	}
 	
-	public static int modularInverse(int e, int phi) {
-		int m0 = phi;
-        int y = 0, x = 1;
- 
-        if (phi == 1)
-            return 0;
- 
-        while (e > 1)
-        {
-            // q is quotient
-            int q = e / phi;
- 
-            int t = phi;
- 
-            // m is remainder now, process
-            // same as Euclid's algo
-            phi = e % phi;
-            e = t;
-            t = y;
- 
-            // Update x and y
-            y = x - q * y;
-            x = t;
-        }
- 
-        // Make x positive
-        if (x < 0)
-            x += m0;
- 
-        return x;
+	public static ArrayList<Integer> solveLinearCongruence(int a, int b, int mod) {			//solves all x in the linear congruence
+		ArrayList<Integer> result = new ArrayList<>();
+		
+		if (b % getGCD(a, mod) != 0)
+			return result;
+		
+		int com = getGCD(mod, getGCD(a, b));
+		int sol = (b / com) * getXByExtendedEuclideanAlgorithm((a / com), (mod / com));
+		
+		if (sol < 0) {
+			while (sol < 0) {
+				sol += (mod / com);
+			}
+		} else if (sol > mod) {
+			while (sol > mod) {
+				sol -= (mod / com);
+			}
+		}
+		
+		while (sol < mod) {
+			result.add(sol);
+			sol += (mod /com);
+		}
+		
+		return result;
+	}
+	
+	public static int getGCD(int a, int b) {
+		if (b == 0)
+			return a;
+		
+		return getGCD(b, a % b);
+	}
+	
+	public static int getXByExtendedEuclideanAlgorithm(int e, int phi) {
+		int x = 0, y = 1;
+		int u = 1, v = 0;
+		
+		while(e != 0) {
+			int p = phi / e;
+			int q = phi % e;
+			
+			int m = x - u * p;
+			int n = y - v * p;
+			
+			phi = e;
+			e = q;
+			x = u;
+			y = v;
+			u = m;
+			v = n;
+		}
+		
+		return x;
 	}
 	
 	public static void main(String[] args) {
-		decryptNoPrivateKey("080122 050001 001409 030500 040125", 999797, 123457);
-		decryptNoPrivateKey("080122 050001 001409 030500 040125", 26219, 123457);
-		decryptNoPrivateKey("080122 050001 001409 030500 040125", 840097, 123457);
-		decryptNoPrivateKey("080122 050001 001409 030500 040125", 4166269, 123457);
-		decryptNoPrivateKey("080122 050001 001409 030500 040125", 1830529, 123457);
-		//int x = modularInverse(693647, 802193);
-		//System.out.println("x : " + x);
-		//decrypt("082976 371981 814231 505650 853440 353277 596004 250518 494162 922046 540928 633792 779152 973836 494176 019498 125267 683832 244888 922046 522776 395123 915899 132032 620457 568301 878543 623328 746341 710542", 999797, 253825);
+		//generateKey(1000, 1100);	//will generate p and q between 1000 and 1100
+		decryptNoPrivateKey("082976 371981 814231 505650 853440 353277 596004 250518 494162 922046 540928 633792 779152 973836 494176 019498 125267 683832 244888 922046 522776 395123 915899 132032 620457 568301 878543 623328 746341 710542", 999797, 123457);
 	}
 }
