@@ -75,7 +75,7 @@ public class RSA {
 	}
 	
 	public static void decryptNoPrivateKey(String text, int n, int e) {				//decrypt the given text using the public key (n, e)
-		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(0, (int)Math.ceil(Math.sqrt(n)));
+		ArrayList<Integer> primes = PrimalityTest.getPrimesBetween(2, (int)Math.ceil(Math.sqrt(n)));
 		BigInteger bigN = BigInteger.valueOf(n);
 		
 		int p = 0, q = 0, phi, d = 0;

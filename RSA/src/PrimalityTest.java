@@ -35,7 +35,15 @@ public class PrimalityTest {
 	public static ArrayList<Integer> getPrimesBetween(int min, int max) {
 		ArrayList<Integer> list = new ArrayList<Integer>();
 		
-		for(int i = min; i <= max; i++) {
+		if(min <= 2) {
+			list.add(2);
+		}
+		
+		if(min % 2 == 0) {
+			min += 1;
+		}
+		
+		for(int i = min; i <= max; i += 2) {
 			if(isPrime(i))
 				list.add(i);
 		}
